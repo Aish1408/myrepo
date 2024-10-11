@@ -1,0 +1,106 @@
+---
+title: "RNA-Seq Analysis, Growth Data Analysis, and Biological Sequence Diversity
+  in Comparative Genomics"
+author: "Aishwarya,shrestha,Swanitha"
+date: "2024-10-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Install the readr package (uncomment if not already installed)
+install.packages("readr")
+```
+
+```{r}
+# Load the readr package
+library(readr)
+# Define the URL for the growth data
+url <- "https://raw.githubusercontent.com/ghazkha/Assessment4/refs/heads/main/growth_data.csv"
+
+# Read the growth data
+growth_data <- read_csv(url)
+# Display the first few rows of the dataset
+head(growth_data)
+```
+
+
+```{r}
+colnames(growth_data)
+```
+```{r}
+# Load the necessary packages
+library(readr)
+# Calculate mean and standard deviation using the $ operator
+mean_start <- mean(growth_data$Circumf_2005_cm, na.rm = TRUE)
+sd_start <- sd(growth_data$Circumf_2005_cm, na.rm = TRUE)
+
+mean_end <- mean(growth_data$Circumf_2020_cm, na.rm = TRUE)
+sd_end <- sd(growth_data$Circumf_2020_cm, na.rm = TRUE)
+
+# Check for NA values in the calculated statistics
+if (is.na(mean_start) || is.na(sd_start) || is.na(mean_end) || is.na(sd_end)) {
+  stop("One or more statistics could not be calculated due to NA values.")
+}
+
+# Create a data frame to store the statistics
+circumference_stats <- data.frame(
+  mean_start = mean_start,
+  sd_start = sd_start,
+  mean_end = mean_end,
+  sd_end = sd_end
+)
+
+# Print the statistics
+print(circumference_stats)
+```
+
+
+```{r}
+# Load the necessary packages
+library(readr)
+library(ggplot2)
+
+# Reshape the data using base R
+growth_data_long <- data.frame(
+  Site = rep(growth_data$Site, each = 2),
+  Time = rep(c("Start (2005)", "End (2020)"), times = nrow(growth_data)),
+  Circumference = c(growth_data$Circumf_2005_cm, growth_data$Circumf_2020_cm)
+)
+
+# Create the box plot
+ggplot(growth_data_long, aes(x = Time, y = Circumference, fill = Site)) +
+  geom_boxplot() +
+  labs(title = "Tree Circumference at Start and End of Study",
+       x = "Time",
+       y = "Circumference (cm)") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+```
+
+```{r}
+# Load necessary libraries
+library(readr)
+# Calculate growth from 2005 to 2020 and add it as a new column
+growth_data$Growth <- growth_data$Circumf_2020_cm - growth_data$Circumf_2005_cm
+# Calculate mean growth by site
+mean_growth <- aggregate(Growth ~ Site, data = growth_data, FUN = mean, na.rm = TRUE)
+# Print the mean growth by site
+print(mean_growth)
+```
+
+```{r}
+# Load necessary library
+library(readr)
+# Perform a t-test to compare growth between the two sites
+t_test_result <- t.test(Growth ~ Site, data = growth_data)
+# Display the t-test results
+print(t_test_result)
+# Extract and display the p-value
+p_value <- t_test_result$p.value
+cat("The p-value for the difference in growth between the two sites is:", p_value, "\n")
+```
+
